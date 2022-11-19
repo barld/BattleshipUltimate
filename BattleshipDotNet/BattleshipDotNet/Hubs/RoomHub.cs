@@ -3,17 +3,26 @@ using SignalRSwaggerGen.Attributes;
 
 namespace BattleshipDotNet.Hubs;
 
+/// <summary>
+/// The signalR hub to manage the play rooms
+/// </summary>
 [SignalRHub]
-public interface IRoomClient
+public class RoomHub : Hub<IRoomHubClient>
 {
-    Task GetAllRooms(IEnumerable<string> roomNames);
-}
+    private static IEnumerable<string> roomNames = new[] {"testRoom"};
 
-[SignalRHub]
-public class RoomHub : Hub<IRoomClient>
-{
-    private IEnumerable<string> roomNames = Enumerable.Empty<string>();
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
 
+        await Clients.Caller.GetAllRooms(roomNames);
+    }
+
+    /// <summary>
+    /// Create a new play room
+    /// </summary>
+    /// <param name="roomName">Name of the new room.</param>
+    /// <returns></returns>
     public async Task CreateRoom(string roomName)
     {
         roomNames = roomNames.Append(roomName);

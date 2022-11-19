@@ -1,4 +1,5 @@
 using BattleshipDotNet.Data;
+using BattleshipDotNet.HubClients;
 using BattleshipDotNet.Hubs;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,13 +11,16 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR()
+    .AddJsonProtocol();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSignalRSwaggerGen();
 });
+
+builder.Services.AddScoped<RoomClient>();
 
 var app = builder.Build();
 
