@@ -1,0 +1,8 @@
+{
+    "/rooms": {
+        "target": "https://localhost:7200/",
+        "secure": false
+        //"ws": true
+    },
+    "changeOrigin": true
+}

@@ -22,6 +22,8 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<RoomClient>();
 
+builder.Services.AddCors();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,5 +47,9 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.MapHub<RoomHub>("/Rooms");
+
+app.UseCors(config => config.WithOrigins("http://localhost:4200").AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 
 app.Run();
