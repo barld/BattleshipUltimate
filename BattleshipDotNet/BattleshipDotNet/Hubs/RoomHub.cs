@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using BattleshipDotNet.Logic;
+using Microsoft.AspNetCore.SignalR;
 using SignalRSwaggerGen.Attributes;
+using System.Collections.Immutable;
 
 namespace BattleshipDotNet.Hubs;
 
@@ -9,23 +11,47 @@ namespace BattleshipDotNet.Hubs;
 [SignalRHub]
 public class RoomHub : Hub<IRoomHubClient>
 {
-    private static IEnumerable<string> roomNames = new[] {"testRoom"};
+    private static SortedDictionary<int, Game> rooms = new SortedDictionary<int, Game>();
 
     public override async Task OnConnectedAsync()
     {
         await base.OnConnectedAsync();
-
-        await Clients.Caller.GetAllRooms(roomNames);
     }
 
-    /// <summary>
-    /// Create a new play room
-    /// </summary>
-    /// <param name="roomName">Name of the new room.</param>
-    /// <returns></returns>
-    public async Task CreateRoom(string roomName)
+    public async Task EnterRoom()
     {
-        roomNames = roomNames.Append(roomName);
-        await Clients.All.GetAllRooms(roomNames);
+        int roomId = !rooms.Any() ? 0 : rooms.Last().Value.Board2 is not null ? rooms.Last().Key + 1 : rooms.Last().Key;
+
+        if (!rooms.ContainsKey(roomId))
+        {
+            rooms.Add(roomId, new Game
+            {
+                Board1 = new PlayerBoard
+                {
+                    ClientId = Context.ConnectionId,
+                    Hits = ImmutableList<Hit>.Empty,
+                    PlayerName = string.Empty,
+                    Ships = ImmutableList<Ship>.Empty
+                },
+                Board2 = null
+            });
+
+            await this.Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
+
+            this.Clients.Group(roomId.ToString()).RoomCreated();
+        } 
+        else
+        {
+            rooms[roomId] = rooms[roomId] with
+            {
+                Board2 = new PlayerBoard
+                {
+                    ClientId = Context.ConnectionId,
+                    Hits = ImmutableList<Hit>.Empty,
+                    PlayerName = string.Empty,
+                    Ships = ImmutableList<Ship>.Empty
+                }
+            };
+        }
     }
 }
